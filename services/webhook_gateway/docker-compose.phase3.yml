@@ -1,0 +1,60 @@
+# Phase 3 local E2E — gateway → stream:i2c → embedded consumer (SH-152/153/173).
+#
+# signed POST → gateway:3020 → XADD stream:i2c → i2c monolith consumer
+# SH-173: gateway syncs webhook-secrets from Supabase sandbox into Redis.
+#
+# docker compose -f docker-compose.phase3.yml up --build -d
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  gateway:
+    build:
+      context: ../..
+      dockerfile: services/webhook-gateway/Dockerfile
+    ports:
+      - "3020:3020"
+    env_file:
+      - ../../backend/image-to-cell-3/.env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      ENVIRONMENT: development
+      LOG_LEVEL: INFO
+      RUN_LIFECYCLE_POLLER: "true"
+      WEBHOOK_LIFECYCLE_INTERVAL_S: "30"
+      WEBHOOK_SECRETS_TTL_S: "300"
+      I2C_TOOL_SLUG: smart-image-to-cell
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  i2c:
+    build:
+      context: ../..
+      dockerfile: backend/image-to-cell-3/Dockerfile
+    ports:
+      - "3011:3011"
+    env_file:
+      - ../../backend/image-to-cell-3/.env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      HOST: "0.0.0.0"
+      PORT: "3011"
+      ENVIRONMENT: development
+      RUN_HTTP_API: "true"
+      RUN_STREAM_CONSUMER: "true"
+      RUN_LIFECYCLE_POLLER: "false"
+      WEBHOOK_LIFECYCLE_ENABLED: "false"
+      ENABLE_POLLING: "false"
+      DLQ_PROCESSOR_ENABLED: "false"
+    depends_on:
+      redis:
+        condition: service_healthy

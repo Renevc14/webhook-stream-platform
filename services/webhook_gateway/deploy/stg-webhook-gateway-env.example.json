@@ -1,0 +1,7 @@
+{
+  "REDIS_URL": "redis://smarthub-redis-staging.uz3bzo.ng.0001.euw2.cache.amazonaws.com:6379/0",
+  "SUPABASE_URL": "https://sgzebkgldkgjjebpnffw.supabase.co",
+  "SUPABASE_SERVICE_ROLE_KEY": "<staging-service-role>",
+  "APP_CRYPTO_KEY": "<same-as-i2c-staging>",
+  "SMARTSHEET_BROKER_SECRET": "<same-as-i2c-staging>"
+}

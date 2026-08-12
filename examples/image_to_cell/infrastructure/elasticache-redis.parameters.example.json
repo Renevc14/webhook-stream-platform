@@ -1,0 +1,34 @@
+[
+  {
+    "ParameterKey": "EnvironmentName",
+    "ParameterValue": "staging"
+  },
+  {
+    "ParameterKey": "VpcId",
+    "ParameterValue": "vpc-REPLACE_ME"
+  },
+  {
+    "ParameterKey": "PrivateSubnetIds",
+    "ParameterValue": "subnet-REPLACE_A,subnet-REPLACE_B"
+  },
+  {
+    "ParameterKey": "EcsTasksSecurityGroupId",
+    "ParameterValue": "sg-REPLACE_ME"
+  },
+  {
+    "ParameterKey": "CacheNodeType",
+    "ParameterValue": "cache.t4g.micro"
+  },
+  {
+    "ParameterKey": "EngineVersion",
+    "ParameterValue": "7.1"
+  },
+  {
+    "ParameterKey": "SnapshotRetentionDays",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "EnableAuthAndTls",
+    "ParameterValue": "true"
+  }
+]

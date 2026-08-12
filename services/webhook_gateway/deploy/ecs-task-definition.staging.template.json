@@ -1,0 +1,62 @@
+{
+  "family": "stg-webhook-gateway",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::262252232181:role/smarthub-stg-ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::262252232181:role/smarthub-stg-ecsTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "webhook-gateway",
+      "image": "262252232181.dkr.ecr.eu-west-2.amazonaws.com/stg-webhook-gateway:latest",
+      "essential": true,
+      "portMappings": [
+        { "containerPort": 3020, "protocol": "tcp", "name": "gateway-port" }
+      ],
+      "environment": [
+        { "name": "ENVIRONMENT", "value": "staging" },
+        { "name": "GATEWAY_PORT", "value": "3020" },
+        { "name": "LOG_LEVEL", "value": "INFO" },
+        { "name": "RUN_LIFECYCLE_POLLER", "value": "true" },
+        { "name": "RUN_WEBHOOK_REGISTRAR", "value": "true" },
+        { "name": "WEBHOOK_REGISTRAR_TOOLS", "value": "smart-image-to-cell" },
+        { "name": "PLATFORM_WEBHOOK_DUAL_WRITE", "value": "true" },
+        { "name": "PLATFORM_WEBHOOK_READ", "value": "true" },
+        { "name": "SMARTQR_SECRET_SYNC_ENABLED", "value": "true" },
+        { "name": "WEBHOOK_LIFECYCLE_INTERVAL_S", "value": "300" },
+        { "name": "WEBHOOK_SECRETS_TTL_S", "value": "300" },
+        { "name": "I2C_TOOL_SLUG", "value": "smart-image-to-cell" },
+        {
+          "name": "SMARTSHEET_WEBHOOK_CALLBACK_BASE_URL",
+          "value": "https://webhooks.prodactivelabs.com"
+        },
+        { "name": "ENCRYPT_TOOL_INTERNAL_URL", "value": "__ENCRYPT_TOOL_INTERNAL_URL__" },
+        { "name": "PYTHONUNBUFFERED", "value": "1" }
+      ],
+      "secrets": [
+        { "name": "REDIS_URL", "valueFrom": "__SECRET_ARN__:REDIS_URL::" },
+        { "name": "SUPABASE_URL", "valueFrom": "__SECRET_ARN__:SUPABASE_URL::" },
+        { "name": "SUPABASE_SERVICE_ROLE_KEY", "valueFrom": "__SECRET_ARN__:SUPABASE_SERVICE_ROLE_KEY::" },
+        { "name": "APP_CRYPTO_KEY", "valueFrom": "__SECRET_ARN__:APP_CRYPTO_KEY::" },
+        { "name": "SMARTSHEET_BROKER_SECRET", "valueFrom": "__SECRET_ARN__:SMARTSHEET_BROKER_SECRET::" },
+        { "name": "GATEWAY_M2M_TOKEN", "valueFrom": "__SECRET_ARN__:GATEWAY_M2M_TOKEN::" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/smarthub-stg/webhook-gateway",
+          "awslogs-region": "eu-west-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:3020/health || exit 1"],
+        "interval": 30,
+        "timeout": 10,
+        "retries": 3,
+        "startPeriod": 45
+      }
+    }
+  ]
+}

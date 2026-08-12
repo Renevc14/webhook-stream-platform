@@ -1,0 +1,57 @@
+# SH-149 — local multi-replica dedup smoke (no ngrok required).
+#
+# Replay sends the same signed webhook to BOTH replicas in parallel — simulates
+# a Smartsheet retry landing on a different ECS task.
+#
+# Quick start (dedup-only, no I2C image build):
+#   docker compose -f docker-compose.sh149.yml up redis -d
+#   .\venv\Scripts\python.exe scripts/sh149_dual_replica_smoke.py dedup
+#
+# Full two-replica webhook replay (needs .env with Supabase + crypto):
+#   docker compose -f docker-compose.sh149.yml up --build -d
+#   .\venv\Scripts\python.exe scripts/sh149_dual_replica_smoke.py webhook --worksheet-id <ID>
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  i2c-replica-a:
+    build:
+      context: ../..
+      dockerfile: backend/image-to-cell-3/Dockerfile
+    ports:
+      - "3011:3011"
+    env_file:
+      - .env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      HOST: "0.0.0.0"
+      PORT: "3011"
+      ENVIRONMENT: development
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  i2c-replica-b:
+    build:
+      context: ../..
+      dockerfile: backend/image-to-cell-3/Dockerfile
+    ports:
+      - "3012:3011"
+    env_file:
+      - .env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      HOST: "0.0.0.0"
+      PORT: "3011"
+      ENVIRONMENT: development
+    depends_on:
+      redis:
+        condition: service_healthy

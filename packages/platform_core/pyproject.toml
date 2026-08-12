@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smarthub-core"
+version = "0.1.0"
+description = "Shared library for the Smarthub platform — crypto, Redis/Supabase clients, Smartsheet client, worker base."
+requires-python = ">=3.11"
+license = { text = "Proprietary" }
+authors = [{ name = "Prodactive Smarthub" }]
+dependencies = [
+    "cryptography>=42,<46",
+    "redis>=5.0,<6.0",
+    "hiredis>=2.3,<3.0",
+    "httpx>=0.27,<0.29",
+    "pydantic>=2.7,<3.0",
+    "pydantic-settings>=2.3,<3.0",
+    "supabase>=2.5,<3.0",
+    "smartsheet-python-sdk>=3.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0,<9.0",
+    "pytest-asyncio>=0.23,<1.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = [
+    "e2e: end-to-end tests against local Redis and/or sandbox Supabase + Smartsheet (opt-in via SMARTHUB_E2E_REDIS=1 or SMARTHUB_E2E_SANDBOX=1)",
+]

@@ -1,0 +1,17 @@
+{
+    "Changes":  [
+                    {
+                        "ResourceRecordSet":  {
+                                                  "AliasTarget":  {
+                                                                      "DNSName":  "smarthub-staging-alb-1286489327.eu-west-2.elb.amazonaws.com",
+                                                                      "EvaluateTargetHealth":  false,
+                                                                      "HostedZoneId":  "ZHURV8PSTC4K8"
+                                                                  },
+                                                  "Name":  "webhooks.prodactivelabs.com",
+                                                  "Type":  "A"
+                                              },
+                        "Action":  "UPSERT"
+                    }
+                ],
+    "Comment":  "SH-172 webhook gateway staging"
+}

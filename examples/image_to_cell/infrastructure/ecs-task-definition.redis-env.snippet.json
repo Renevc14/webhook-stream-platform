@@ -1,0 +1,9 @@
+{
+  "_comment": "Merged into ecs-task-definition.staging.template.json (Phase 1 / PR #160). REDIS_URL lives in stg/image-to-cell-env JSON — not a separate secret.",
+  "secrets": [
+    {
+      "name": "REDIS_URL",
+      "valueFrom": "__SECRET_ARN__:REDIS_URL::"
+    }
+  ]
+}

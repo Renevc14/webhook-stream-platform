@@ -1,0 +1,99 @@
+{
+  "smoke_exit": 0,
+  "config_id": "a01b58f4-4dbd-4e7f-a8db-2f2f4b2ca72d",
+  "form_id": "b146d415-87a5-4abb-91a9-4c42397fa034",
+  "open_id": "a80c86a5-1eb7-495e-871c-47b3c7111c56",
+  "bad_id": "38551cc5-bb51-4e77-8171-623e72b1d5c3",
+  "results": [
+    {
+      "name": "10_create_identify",
+      "ok": true,
+      "detail": "201 id=a01b58f4-4dbd-4e7f-a8db-2f2f4b2ca72d"
+    },
+    {
+      "name": "10_list_no_auto_generate",
+      "ok": true,
+      "detail": "count=1"
+    },
+    {
+      "name": "11_generate",
+      "ok": true,
+      "detail": "200 {'results': [{'row_id': 2357707723898756, 'status': 'ok', 'reason': 'wrote:qr'}, {'row_id': 6861307351269252, 'status': 'ok', 'reason': 'wrote:qr'}, {'row_id': 504218882277252, 'status': 'ok', 'reason': 'wrote:qr'}, {'row_id': 8990949705121668, 'status': 'skipped', 'reason': 'payload:row has no non-empty content'}, {'row_id': 3984312770625412, 'status': 'ok', 'reason': 'wrote:qr'}], 'summary': {'total': 5, 'ok': 4, 'skipped': 1, 'errors': 0, 'estimated_bolts_charged': 4}}"
+    },
+    {
+      "name": "12_idempotent",
+      "ok": true,
+      "detail": "200 {'results': [{'row_id': 2357707723898756, 'status': 'skipped', 'reason': 'hash_unchanged'}, {'row_id': 6861307351269252, 'status': 'skipped', 'reason': 'hash_unchanged'}, {'row_id': 504218882277252, 'status': 'skipped', 'reason': 'hash_unchanged'}, {'row_id': 8990949705121668, 'status': 'skipped', 'reason': 'payload:row has no non-empty content'}, {'row_id': 3984312770625412, 'status': 'skipped', 'reason': 'hash_unchanged'}], 'summary': {'total': 5, 'ok': 0, 'skipped': 5, 'errors': 0, 'estimated_bolts_charged': 0}}"
+    },
+    {
+      "name": "11_images_written",
+      "ok": true,
+      "detail": "image_rows=4"
+    },
+    {
+      "name": "11_empty_row_skipped",
+      "ok": true,
+      "detail": "empty_has_image=False"
+    },
+    {
+      "name": "13_image_source_handled",
+      "ok": true,
+      "detail": "200 {'results': [{'row_id': 2357707723898756, 'status': 'error', 'reason': 'content_column_is_image:QR Code \u2014 ID to Code / Prefill Form require text values, not cell images or attachments'}, {'row_id': 6861307351269252, 'status': 'error', 'reason': 'content_column_is_image:QR Code \u2014 ID to Code / Prefill Form require text values, not cell images or attachments'}, {'row_id': 504218882277252, 'status': 'error', 'reason': 'content_column_is_image:QR Code \u2014 ID to Code / Prefill Form require text values, not cell images or attachments'}, {'row_id': 8990949705121668, 'status': 'skipped', 'reason': 'payload:row has no non-empty content'}, {'row_id': 3984312770625412, 'status': 'error', 'reason': 'content_column_is_image:QR Code \u2014 ID to Code / Prefill Form require text values, not cell images or attachments'}], 'summary': {'total': 5, 'ok': 0, 'skipped': 1, 'errors': 4, 'estimated_bolts_charged': 0}}"
+    },
+    {
+      "name": "16_preview",
+      "ok": true,
+      "detail": "png"
+    },
+    {
+      "name": "16_style_update",
+      "ok": true,
+      "detail": "200"
+    },
+    {
+      "name": "17_style_rewrite",
+      "ok": true,
+      "detail": "200 {'results': [{'row_id': 2357707723898756, 'status': 'ok', 'reason': 'wrote:qr'}, {'row_id': 6861307351269252, 'status': 'ok', 'reason': 'wrote:qr'}, {'row_id': 504218882277252, 'status': 'ok', 'reason': 'wrote:qr'}, {'row_id': 8990949705121668, 'status': 'skipped', 'reason': 'payload:row has no non-empty content'}, {'row_id': 3984312770625412, 'status': 'ok', 'reason': 'wrote:qr'}], 'summary': {'total': 5, 'ok': 4, 'skipped': 1, 'errors': 0, 'estimated_bolts_charged': 4}}"
+    },
+    {
+      "name": "20_hmac_invalid",
+      "ok": true,
+      "detail": "401"
+    },
+    {
+      "name": "09_inject_closed",
+      "ok": true,
+      "detail": "403 {'detail': 'inject-event only in local env'}"
+    },
+    {
+      "name": "14_prefill",
+      "ok": true,
+      "detail": "{'status': 'ok', 'reason': 'wrote:qr'}"
+    },
+    {
+      "name": "15_open_row",
+      "ok": true,
+      "detail": "{'status': 'ok', 'reason': 'wrote:qr'}"
+    },
+    {
+      "name": "19_webhook_register_challenge",
+      "ok": true,
+      "detail": "ENABLED + challenge 200 in 2ms"
+    },
+    {
+      "name": "19_webhook_signed_synthetic",
+      "ok": true,
+      "detail": "status=200 wrote=True"
+    },
+    {
+      "name": "19_webhook_live_delivery",
+      "ok": true,
+      "detail": "Live callback observed on second cell edit (req=de5e35b08bd5 wrote:qr); ngrok free may drop first events"
+    },
+    {
+      "name": "21_delete_unregisters_webhook",
+      "ok": true,
+      "detail": "delete_status=204 remaining_webhooks=0"
+    }
+  ]
+}

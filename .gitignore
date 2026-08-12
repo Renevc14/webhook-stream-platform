@@ -1,0 +1,30 @@
+# Secrets & local junk — never commit
+.env
+.env.*
+*.pem
+*.key
+credentials*.json
+
+# Python / tooling
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+dist/
+build/
+*.egg-info/
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Deploy / diagnostics
+.deploy-tmp/
+*.log

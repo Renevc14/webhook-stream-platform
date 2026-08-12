@@ -1,0 +1,137 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Template (concept / starting point) for Redis on Amazon ElastiCache to pair with
+  Image-to-Cell v3 on ECS Fargate. Creates a single-shard Redis replication group
+  in private subnets, reachable only from your ECS task security group.
+  Before production, review node size, Multi-AZ, snapshot retention, and naming.
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: staging
+    Description: Short name for tags and resource naming (e.g. staging, prod).
+    AllowedPattern: '[a-z0-9][a-z0-9-]{0,18}[a-z0-9]'
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC where ECS tasks and this Redis cluster will live.
+  PrivateSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: >
+      Two or more private subnets in different AZs (ElastiCache requires a subnet group
+      spanning AZs even for a single-node group).
+  EcsTasksSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: >
+      Security group attached to Image-to-Cell v3 Fargate tasks. Redis will accept
+      traffic only from this group on port 6379.
+  CacheNodeType:
+    Type: String
+    Default: cache.t4g.micro
+    Description: >
+      ElastiCache node type. Use AWS pricing calculator to compare; t4g.micro is a common
+      starting point for low-traffic shared state.
+  EngineVersion:
+    Type: String
+    Default: '7.1'
+    Description: Redis engine version (confirm availability in your region).
+  SnapshotRetentionDays:
+    Type: Number
+    Default: 1
+    MinValue: 0
+    MaxValue: 35
+    Description: Days to retain automatic snapshots (0 disables except on delete).
+  EnableAuthAndTls:
+    Type: String
+    Default: 'true'
+    AllowedValues: ['true', 'false']
+    Description: >
+      Recommended true for production. Enables encryption in transit and Redis AUTH
+      using a token stored in Secrets Manager (app must use rediss:// and the token).
+
+Conditions:
+  UseAuthAndTls: !Equals [!Ref EnableAuthAndTls, 'true']
+
+Resources:
+  RedisAuthTokenSecret:
+    Type: AWS::SecretsManager::Secret
+    Condition: UseAuthAndTls
+    Properties:
+      Name: !Sub 'elasticache/i2c-redis/${EnvironmentName}/auth-token'
+      Description: Redis AUTH token for Image-to-Cell v3 ElastiCache (do not commit).
+      GenerateSecretString:
+        PasswordLength: 32
+        ExcludeCharacters: '"@/\:#?[]{}()'
+
+  RedisSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      Description: Private subnets for I2C ElastiCache
+      SubnetIds: !Ref PrivateSubnetIds
+
+  RedisSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub 'ElastiCache Redis ingress for I2C (${EnvironmentName})'
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 6379
+          ToPort: 6379
+          SourceSecurityGroupId: !Ref EcsTasksSecurityGroupId
+          Description: ECS Fargate tasks (Image-to-Cell v3)
+      SecurityGroupEgress:
+        - IpProtocol: '-1'
+          CidrIp: 0.0.0.0/0
+          Description: Allow outbound (ElastiCache operational traffic)
+
+  RedisReplicationGroup:
+    Type: AWS::ElastiCache::ReplicationGroup
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
+    Properties:
+      ReplicationGroupId: !Sub 'i2c-${EnvironmentName}-redis'
+      ReplicationGroupDescription: !Sub 'I2C v3 Redis (${EnvironmentName})'
+      Engine: redis
+      EngineVersion: !Ref EngineVersion
+      CacheNodeType: !Ref CacheNodeType
+      NumCacheClusters: 1
+      AutomaticFailoverEnabled: false
+      MultiAZEnabled: false
+      CacheSubnetGroupName: !Ref RedisSubnetGroup
+      SecurityGroupIds:
+        - !Ref RedisSecurityGroup
+      AtRestEncryptionEnabled: true
+      TransitEncryptionEnabled: !If
+        - UseAuthAndTls
+        - true
+        - false
+      AuthToken: !If
+        - UseAuthAndTls
+        - !Sub '{{resolve:secretsmanager:${RedisAuthTokenSecret}:SecretString}}'
+        - !Ref 'AWS::NoValue'
+      SnapshotRetentionLimit: !Ref SnapshotRetentionDays
+      Tags:
+        - Key: Name
+          Value: !Sub 'i2c-redis-${EnvironmentName}'
+        - Key: Application
+          Value: image-to-cell-v3
+
+Outputs:
+  RedisPrimaryEndPointAddress:
+    Description: Primary reader/write endpoint (hostname) for Redis.
+    Value: !GetAtt RedisReplicationGroup.PrimaryEndPoint.Address
+  RedisPrimaryEndPointPort:
+    Description: Redis port (6379).
+    Value: !GetAtt RedisReplicationGroup.PrimaryEndPoint.Port
+  RedisSecurityGroupId:
+    Description: SG attached to the replication group (for troubleshooting additional rules).
+    Value: !Ref RedisSecurityGroup
+  RedisAuthSecretArn:
+    Condition: UseAuthAndTls
+    Description: Secrets Manager ARN holding the Redis AUTH token (retrieve to build REDIS_URL).
+    Value: !Ref RedisAuthTokenSecret
+  ConnectionNotes:
+    Description: >
+      With EnableAuthAndTls=true, use TLS (rediss://) and the secret string as password.
+      Example URL shape — rediss://:TOKEN@endpoint:6379/0 — see README-ELASTICACHE.md.
+    Value: README-ELASTICACHE.md

@@ -1,0 +1,69 @@
+{
+  "family": "stg-smart-qr",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "executionRoleArn": "arn:aws:iam::262252232181:role/smarthub-stg-ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::262252232181:role/smarthub-stg-ecsTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "smart-qr",
+      "image": "262252232181.dkr.ecr.eu-west-2.amazonaws.com/stg-smart-qr:latest",
+      "essential": true,
+      "portMappings": [
+        { "containerPort": 3021, "protocol": "tcp", "name": "api-port" }
+      ],
+      "environment": [
+        { "name": "APP_ENV", "value": "staging" },
+        { "name": "PORT", "value": "3021" },
+        { "name": "PRODUCT_SLUG", "value": "smart-qr" },
+        { "name": "CHANGE_AGENT_ID", "value": "smart-qr-v1" },
+        { "name": "LOG_LEVEL", "value": "INFO" },
+        { "name": "DATABASE_SSL", "value": "require" },
+        { "name": "SMARTSHEET_MODE", "value": "live" },
+        { "name": "SMARTQR_BILLING_MODE", "value": "bolts" },
+        { "name": "RUN_STREAM_CONSUMER", "value": "true" },
+        {
+          "name": "ENCRYPT_TOOL_INTERNAL_URL",
+          "value": "https://api.prodactivelabs.com"
+        },
+        {
+          "name": "SMARTSHEET_WEBHOOK_CALLBACK_BASE_URL",
+          "value": "https://webhooks.prodactivelabs.com"
+        },
+        {
+          "name": "CORS_ORIGIN",
+          "value": "https://www.prodactivelabs.com,https://prodactivelabs.com,https://app.prodactivelabs.com"
+        },
+        { "name": "PYTHONUNBUFFERED", "value": "1" }
+      ],
+      "secrets": [
+        { "name": "DATABASE_URL", "valueFrom": "__SECRET_ARN__:DATABASE_URL::" },
+        { "name": "REDIS_URL", "valueFrom": "__SECRET_ARN__:REDIS_URL::" },
+        { "name": "SUPABASE_URL", "valueFrom": "__SECRET_ARN__:SUPABASE_URL::" },
+        { "name": "SUPABASE_JWT_SECRET", "valueFrom": "__SECRET_ARN__:SUPABASE_JWT_SECRET::" },
+        { "name": "SUPABASE_SERVICE_ROLE_KEY", "valueFrom": "__SECRET_ARN__:SUPABASE_SERVICE_ROLE_KEY::" },
+        { "name": "APP_CRYPTO_KEY", "valueFrom": "__SECRET_ARN__:APP_CRYPTO_KEY::" },
+        { "name": "SMARTSHEET_BROKER_SECRET", "valueFrom": "__SECRET_ARN__:SMARTSHEET_BROKER_SECRET::" },
+        { "name": "GATEWAY_INTERNAL_URL", "valueFrom": "__SECRET_ARN__:GATEWAY_INTERNAL_URL::" },
+        { "name": "GATEWAY_M2M_TOKEN", "valueFrom": "__SECRET_ARN__:GATEWAY_M2M_TOKEN::" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/smarthub-stg/smart-qr",
+          "awslogs-region": "eu-west-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:3021/ready || exit 1"],
+        "interval": 30,
+        "timeout": 10,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}

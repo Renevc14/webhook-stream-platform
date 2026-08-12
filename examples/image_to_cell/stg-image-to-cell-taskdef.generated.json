@@ -1,0 +1,93 @@
+{
+  "family": "stg-image-to-cell",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "2048",
+  "memory": "8192",
+  "executionRoleArn": "arn:aws:iam::262252232181:role/smarthub-stg-ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::262252232181:role/smarthub-stg-ecsTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "image-to-cell-3",
+      "image": "262252232181.dkr.ecr.eu-west-2.amazonaws.com/stg-image-to-cell:latest",
+      "essential": true,
+      "portMappings": [
+        { "containerPort": 3011, "protocol": "tcp", "name": "api-port" }
+      ],
+      "environment": [
+        { "name": "ENVIRONMENT", "value": "staging" },
+        { "name": "HOST", "value": "0.0.0.0" },
+        { "name": "PORT", "value": "3011" },
+        { "name": "WORKERS", "value": "1" },
+        { "name": "PRODUCT_SLUG", "value": "smart-image-to-cell" },
+        { "name": "WEBHOOK_LIFECYCLE_ENABLED", "value": "true" },
+        { "name": "WEBHOOK_LIFECYCLE_INTERVAL_S", "value": "300" },
+        {
+          "name": "WEBHOOK_CALLBACK_URL",
+          "value": "https://smart-image-to-cell.prodactivelabs.com/webhook/smartsheet"
+        },
+        {
+          "name": "SMARTSHEET_WEBHOOK_CALLBACK_BASE_URL",
+          "value": "https://webhooks.prodactivelabs.com"
+        },
+        { "name": "WEBHOOK_PROCESSING_MODES", "value": "webhook" },
+        { "name": "DLQ_PROCESSOR_ENABLED", "value": "true" },
+        { "name": "DLQ_PROCESSOR_INTERVAL_S", "value": "300" },
+        { "name": "DLQ_BATCH_SIZE", "value": "20" },
+        { "name": "DLQ_MAX_RETRIES", "value": "3" },
+        { "name": "ENABLE_POLLING", "value": "false" },
+        { "name": "POLLING_INTERVAL_S", "value": "300" },
+        { "name": "BACKFILL_MAX_PAGES", "value": "100" },
+        { "name": "BACKFILL_MAX_WORKERS", "value": "4" },
+        { "name": "MAX_CONCURRENT_ORGS", "value": "8" },
+        { "name": "MAX_CONCURRENT_ROWS", "value": "4" },
+        { "name": "MAX_PARALLEL_IMAGES", "value": "5" },
+        { "name": "MAX_CONCURRENT_ATTACHMENTS", "value": "10" },
+        { "name": "ENABLE_PARALLEL_IMAGE_PROCESSING", "value": "true" },
+        { "name": "SMARTSHEET_MAX_CALLS_PER_MINUTE", "value": "275" },
+        { "name": "SMARTSHEET_RATE_INTERVAL_S", "value": "0.25" },
+        { "name": "ENABLE_RATE_LIMITING", "value": "true" },
+        { "name": "API_RATE_LIMIT", "value": "60" },
+        { "name": "API_BURST_SIZE", "value": "10" },
+        { "name": "WEBHOOK_RATE_LIMIT", "value": "100" },
+        { "name": "WEBHOOK_BURST_SIZE", "value": "20" },
+        { "name": "LOG_LEVEL", "value": "INFO" },
+        { "name": "LOG_JSON_FORMAT", "value": "false" },
+        { "name": "ENABLE_MEMORY_OPTIMIZATION", "value": "true" },
+        { "name": "MAX_MEMORY_USAGE_PERCENT", "value": "85" },
+        { "name": "HTTP_POOL_CONNECTIONS", "value": "20" },
+        { "name": "HTTP_POOL_MAXSIZE", "value": "50" },
+        { "name": "PYTHONUNBUFFERED", "value": "1" },
+        {
+          "name": "CORS_ORIGIN",
+          "value": "https://www.prodactivelabs.com,https://prodactivelabs.com,https://app.prodactivelabs.com"
+        },
+        { "name": "ENCRYPT_TOOL_INTERNAL_URL", "value": "https://api.prodactivelabs.com" }
+      ],
+      "secrets": [
+        { "name": "SUPABASE_URL", "valueFrom": "arn:aws:secretsmanager:eu-west-2:262252232181:secret:stg/image-to-cell-env-oPHlg9:SUPABASE_URL::" },
+        { "name": "SUPABASE_SERVICE_ROLE_KEY", "valueFrom": "arn:aws:secretsmanager:eu-west-2:262252232181:secret:stg/image-to-cell-env-oPHlg9:SUPABASE_SERVICE_ROLE_KEY::" },
+        { "name": "APP_CRYPTO_KEY", "valueFrom": "arn:aws:secretsmanager:eu-west-2:262252232181:secret:stg/image-to-cell-env-oPHlg9:APP_CRYPTO_KEY::" },
+        { "name": "SUPABASE_JWT_SECRET", "valueFrom": "arn:aws:secretsmanager:eu-west-2:262252232181:secret:stg/image-to-cell-env-oPHlg9:SUPABASE_JWT_SECRET::" },
+        { "name": "I2C_ADMIN_API_KEY", "valueFrom": "arn:aws:secretsmanager:eu-west-2:262252232181:secret:stg/image-to-cell-env-oPHlg9:I2C_ADMIN_API_KEY::" },
+        { "name": "REDIS_URL", "valueFrom": "arn:aws:secretsmanager:eu-west-2:262252232181:secret:stg/image-to-cell-env-oPHlg9:REDIS_URL::" },
+        { "name": "SMARTSHEET_BROKER_SECRET", "valueFrom": "arn:aws:secretsmanager:eu-west-2:262252232181:secret:stg/image-to-cell-env-oPHlg9:SMARTSHEET_BROKER_SECRET::" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/smarthub-stg/image-to-cell",
+          "awslogs-region": "eu-west-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:3011/health || exit 1"],
+        "interval": 30,
+        "timeout": 10,
+        "retries": 3,
+        "startPeriod": 90
+      }
+    }
+  ]
+}

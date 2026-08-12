@@ -1,0 +1,65 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: smartqr
+      POSTGRES_PASSWORD: smartqr
+      POSTGRES_DB: smartqr
+    ports:
+      - "5433:5432"
+    volumes:
+      - smartqr_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smartqr -d smartqr"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  smart-qr:
+    build:
+      context: ../..
+      dockerfile: backend/smart-qr/Dockerfile
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - "3021:3021"
+    environment:
+      APP_ENV: local
+      PORT: "3021"
+      PRODUCT_SLUG: smart-qr
+      CHANGE_AGENT_ID: smart-qr-v1
+      DATABASE_URL: postgresql://smartqr:smartqr@db:5432/smartqr
+      REDIS_URL: redis://redis:6379/0
+      RUN_STREAM_CONSUMER: "true"
+      SMARTSHEET_MODE: ${SMARTSHEET_MODE:-mock}
+      # Local-only fallback; ignored as soon as the broker below is configured.
+      SMARTSHEET_ACCESS_TOKEN: ${SMARTSHEET_ACCESS_TOKEN:-}
+      ENCRYPT_TOOL_INTERNAL_URL: ${ENCRYPT_TOOL_INTERNAL_URL:-}
+      SMARTSHEET_BROKER_SECRET: ${SMARTSHEET_BROKER_SECRET:-}
+      SMARTSHEET_WEBHOOK_CALLBACK_BASE_URL: ${SMARTSHEET_WEBHOOK_CALLBACK_BASE_URL:-}
+      SUPABASE_JWT_SECRET: ${SUPABASE_JWT_SECRET:-}
+      SUPABASE_URL: ${SUPABASE_URL:-}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
+      APP_CRYPTO_KEY: ${APP_CRYPTO_KEY:-local-dev-crypto-key-32b-pad!!!!}
+      SMARTQR_BILLING_MODE: ${SMARTQR_BILLING_MODE:-mock}
+      GATEWAY_INTERNAL_URL: ${GATEWAY_INTERNAL_URL:-}
+      GATEWAY_M2M_TOKEN: ${GATEWAY_M2M_TOKEN:-local-dev-m2m}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  smartqr_pg:

@@ -1,0 +1,28 @@
+openapi: 3.0.3
+info:
+  title: SmartQR API
+  version: 0.1.0
+paths:
+  /health:
+    get:
+      summary: Liveness
+      responses:
+        "200":
+          description: OK
+  /api/v1/configs:
+    get:
+      summary: List configs for org
+    post:
+      summary: Create and activate config
+  /api/v1/configs/{config_id}/generate-row:
+    post:
+      summary: Generate code for one row (Chrome / manual)
+  /api/v1/configs/{config_id}/estimate-backfill:
+    post:
+      summary: Estimate bolts for backfill
+  /api/v1/configs/{config_id}/backfill:
+    post:
+      summary: Run backfill for row ids
+  /api/v1/dev/inject-event:
+    post:
+      summary: Local-only event inject

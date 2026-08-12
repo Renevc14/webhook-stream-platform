@@ -1,0 +1,62 @@
+{
+  "family": "stg-encrypt-tool",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::262252232181:role/smarthub-stg-ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::262252232181:role/smarthub-stg-ecsTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "encrypt-tool",
+      "image": "262252232181.dkr.ecr.eu-west-2.amazonaws.com/stg-encrypt-tool:latest",
+      "essential": true,
+      "portMappings": [
+        { "containerPort": 3051, "protocol": "tcp" }
+      ],
+      "environment": [
+        { "name": "ENVIRONMENT", "value": "staging" },
+        { "name": "ENCRYPT_TOOL_REQUIRE_JWT", "value": "1" },
+        { "name": "ENCRYPT_TOOL_VERBOSE_LOGS", "value": "0" },
+        { "name": "ENCRYPT_TOOL_MAX_BODY_BYTES", "value": "262144" },
+        { "name": "ENCRYPT_TOOL_AUDIT_TO_DB", "value": "1" },
+        { "name": "GUNICORN_WORKERS", "value": "2" },
+        { "name": "GUNICORN_THREADS", "value": "2" },
+        { "name": "GUNICORN_TIMEOUT", "value": "120" },
+        { "name": "GUNICORN_GRACEFUL_TIMEOUT", "value": "30" },
+        { "name": "GUNICORN_KEEP_ALIVE", "value": "5" },
+        { "name": "PYTHONUNBUFFERED", "value": "1" },
+        {
+          "name": "ENCRYPT_TOOL_ALLOWED_ORIGINS",
+          "value": "https://www.prodactivelabs.com,https://prodactivelabs.com,https://app.prodactivelabs.com"
+        }
+      ],
+      "secrets": [
+        { "name": "SUPABASE_URL", "valueFrom": "__SECRET_ARN__:SUPABASE_URL::" },
+        { "name": "SUPABASE_SERVICE_ROLE_KEY", "valueFrom": "__SECRET_ARN__:SUPABASE_SERVICE_ROLE_KEY::" },
+        { "name": "APP_CRYPTO_KEY", "valueFrom": "__SECRET_ARN__:APP_CRYPTO_KEY::" },
+        { "name": "SUPABASE_JWT_SECRET", "valueFrom": "__SECRET_ARN__:SUPABASE_JWT_SECRET::" },
+        { "name": "SMARTSHEET_OAUTH_CLIENT_ID_US", "valueFrom": "__SECRET_ARN__:SMARTSHEET_OAUTH_CLIENT_ID_US::" },
+        { "name": "SMARTSHEET_OAUTH_CLIENT_SECRET_US", "valueFrom": "__SECRET_ARN__:SMARTSHEET_OAUTH_CLIENT_SECRET_US::" },
+        { "name": "SMARTSHEET_OAUTH_CLIENT_ID_EU", "valueFrom": "__SECRET_ARN__:SMARTSHEET_OAUTH_CLIENT_ID_EU::" },
+        { "name": "SMARTSHEET_OAUTH_CLIENT_SECRET_EU", "valueFrom": "__SECRET_ARN__:SMARTSHEET_OAUTH_CLIENT_SECRET_EU::" },
+        { "name": "SMARTSHEET_BROKER_SECRET", "valueFrom": "__SECRET_ARN__:SMARTSHEET_BROKER_SECRET::" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/smarthub-stg/encrypt-tool",
+          "awslogs-region": "eu-west-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:3051/')\" || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}

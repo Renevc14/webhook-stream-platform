@@ -1,0 +1,13 @@
+# Webhook Gateway — shared ingress for Smartsheet (v1) and future providers
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+supabase>=2.9.0,<3.0
+httpx>=0.26.0
+
+# smarthub_core: install editable from repo root
+#   pip install -e ./shared/smarthub_core
+
+pytest>=8.0,<9.0
+pytest-asyncio>=0.23,<1.0

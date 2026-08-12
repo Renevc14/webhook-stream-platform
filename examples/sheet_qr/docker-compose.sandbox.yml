@@ -1,0 +1,41 @@
+# Override for sandbox validation against Supabase sandbox.
+# Usage (from repo root):
+#   docker compose -f backend/smart-qr/docker-compose.yml \
+#     -f backend/smart-qr/docker-compose.sandbox.yml up -d --build smart-qr
+#
+# Requires backend/smart-qr/.env (gitignored) with DATABASE_URL pointing at
+# the sandbox project, SUPABASE_JWT_SECRET, SUPABASE_SERVICE_ROLE_KEY (org
+# membership + billing reads), APP_CRYPTO_KEY, and ENCRYPT_TOOL_INTERNAL_URL +
+# SMARTSHEET_BROKER_SECRET (per-user Smartsheet OAuth).
+# Local Postgres is not used; Redis stays local.
+
+services:
+  smart-qr:
+    env_file:
+      - path: .env
+        required: true
+    environment:
+      APP_ENV: sandbox
+      PORT: "3021"
+      PRODUCT_SLUG: smart-qr
+      CHANGE_AGENT_ID: smart-qr-v1
+      # Override the local defaults from docker-compose.yml.
+      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_SSL: require
+      DATABASE_STATEMENT_CACHE_SIZE: "0"
+      REDIS_URL: redis://redis:6379/0
+      RUN_STREAM_CONSUMER: "true"
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_JWT_SECRET: ${SUPABASE_JWT_SECRET}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      APP_CRYPTO_KEY: ${APP_CRYPTO_KEY}
+      SMARTSHEET_MODE: live
+      ENCRYPT_TOOL_INTERNAL_URL: ${ENCRYPT_TOOL_INTERNAL_URL}
+      SMARTSHEET_BROKER_SECRET: ${SMARTSHEET_BROKER_SECRET}
+      SMARTSHEET_WEBHOOK_CALLBACK_BASE_URL: ${SMARTSHEET_WEBHOOK_CALLBACK_BASE_URL:-}
+      SMARTQR_BILLING_MODE: ${SMARTQR_BILLING_MODE:-bolts}
+      LOG_LEVEL: INFO
+      CORS_ORIGIN: http://localhost:3000,http://127.0.0.1:3000
+    depends_on:
+      redis:
+        condition: service_healthy
